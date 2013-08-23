@@ -244,11 +244,14 @@ ambitv_runloop()
          long millis = ambitv_millis_between(&now, &conf.last_button_press);
                
          if (millis > BUTTON_MILLIS) {
-            if (conf.button_cnt > 1) {
+            if (conf.button_cnt == 2) {
                ret = ambitv_cycle_next_program();
-            } else {
+            } else if (conf.button_cnt == 1) {
                ret = ambitv_toggle_paused();
-            }
+            } else if (conf.button_cnt > 5) {
+				ambitv_toggle_paused();
+				ret = system("shutdown -h 0");
+			}
             
             conf.button_cnt = 0;
             memset(&conf.last_button_press, 0, sizeof(struct timeval));
@@ -447,7 +450,7 @@ main(int argc, char** argv)
       "\tpress 't' to toggle pause.\n");
    if (conf.gpio_idx >= 0) {
       ambitv_log(ambitv_log_info,
-         "\tphysical (gpio) button: click to pause/resume, double-click to cycle between programs.\n");
+         "\tphysical (gpio) button: click to pause/resume, double-click to cycle between programs, click 6 times to shutdown the raspberry pi.\n");
    }
    
    while (conf.running && ambitv_runloop() >= 0);
