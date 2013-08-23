@@ -274,7 +274,7 @@ ambitv_video_fmt_detect_crop_for_frame_uyvy(int crop[4], int luminance_threshold
       for (i=0; i<w/8; i+=4) {
          for (j=0; j<32; j++) {
             unsigned char* pix = &(((unsigned char*)pixbuf)[i + ss[j]*bytesperline]);      
-            if (luminance_threshold < pix[0] && luminance_threshold < pix[2]) {
+            if (luminance_threshold < pix[1] && luminance_threshold < pix[3]) {
                crop[3] = i>>1;
                goto left_done;
             }
@@ -287,7 +287,7 @@ ambitv_video_fmt_detect_crop_for_frame_uyvy(int crop[4], int luminance_threshold
       for (i=w*2; i>2*w-w/8; i-=4) {
          for (j=0; j<32; j++) {
             unsigned char* pix = &(((unsigned char*)pixbuf)[i + ss[j]*bytesperline]);
-            if (luminance_threshold < pix[0] && luminance_threshold < pix[2]) {
+            if (luminance_threshold < pix[1] && luminance_threshold < pix[3]) {
                crop[1] = (w*2-i)>>1;
                goto right_done;
             }
@@ -303,7 +303,7 @@ ambitv_video_fmt_detect_crop_for_frame_uyvy(int crop[4], int luminance_threshold
      for (i=0; i<h/5; i++) {
          for (j=0; j<32; j++) {
             unsigned char* pix = &(((unsigned char*)pixbuf)[ss[j] + i*bytesperline]);
-            if (luminance_threshold < pix[0] && luminance_threshold < pix[2]) {
+            if (luminance_threshold < pix[1] && luminance_threshold < pix[3]) {
                crop[0] = i;
                goto top_done;
             }
@@ -316,7 +316,7 @@ ambitv_video_fmt_detect_crop_for_frame_uyvy(int crop[4], int luminance_threshold
       for (i=h; i>h-h/5; i--) {
          for (j=0; j<32; j++) {
             unsigned char* pix = &(((unsigned char*)pixbuf)[ss[j] + i*bytesperline]);
-            if (luminance_threshold < pix[0] && luminance_threshold < pix[2]) {
+            if (luminance_threshold < pix[1] && luminance_threshold < pix[3]) {
                crop[2] = h-i;
                goto bottom_done;
             }
