@@ -24,6 +24,7 @@
 
 enum ambitv_video_format {
    ambitv_video_format_yuyv,
+   ambitv_video_format_uyvy,
    ambitv_video_format_unknown 
 };
 
