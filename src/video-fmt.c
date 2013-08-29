@@ -46,8 +46,8 @@ v4l2_to_ambitv_video_format(uint32_t fourcc)
       case V4L2_PIX_FMT_YUYV:
          fmt = ambitv_video_format_yuyv;
          break;
-      case V4L2_PIX_FMT_UYVY:
-         fmt = ambitv_video_format_uyvy;
+	  case V4L2_PIX_FMT_UYVY:
+         fmt = ambitv_video_format_yuyv;
          break;
       default:
          break;
@@ -95,48 +95,10 @@ static int avg_rgb_for_block_yuyv(unsigned char* rgb, const void* pixbuf, int x,
       for (j=y; j<y+h; j++) {
          unsigned char* yuyv = &(((unsigned char*)pixbuf)[2*i + j*bytesperline]);
 
-         y1 = yuyv[0];
-         u  = yuyv[1];
-         y2 = yuyv[2];
-         v  = yuyv[3];
-
-         yuv_to_rgb(y1, u, v, &irgb[0], &irgb[1], &irgb[2]);
-         yuv_to_rgb(y2, u, v, &irgb[3], &irgb[4], &irgb[5]);
-
-         for (k=0; k<6; k++)
-            avg_rgb[k%3] += irgb[k];
-
-         cnt += 2;
-      }
-   }
-   
-   rgb[0] = avg_rgb[0] / cnt;
-   rgb[1] = avg_rgb[1] / cnt;
-   rgb[2] = avg_rgb[2] / cnt;
-
-   return 0;
-}
-
-static int avg_rgb_for_block_uyvy(unsigned char* rgb, const void* pixbuf, int x, int y, int w, int h, int bytesperline, int coarseness)
-{
-   int i, j, k, v, y1, u, y2, cnt = 0;
-
-   long avg_rgb[3] = {0,0,0};
-   unsigned char irgb[6];
-
-   if (0 == bytesperline)
-      bytesperline = 2*w;
-
-   x = (x >> 2) << 2;
-
-   for (i=x; i<x+w; i+=2*coarseness) {
-      for (j=y; j<y+h; j++) {
-         unsigned char* uyvy = &(((unsigned char*)pixbuf)[2*i + j*bytesperline]);
-
-         u  = uyvy[0];
-         y1 = uyvy[1];
-         v  = uyvy[2];
-         y2 = uyvy[3];
+         y1 = yuyv[1];
+         u  = yuyv[0];
+         y2 = yuyv[3];
+         v  = yuyv[2];
 
          yuv_to_rgb(y1, u, v, &irgb[0], &irgb[1], &irgb[2]);
          yuv_to_rgb(y2, u, v, &irgb[3], &irgb[4], &irgb[5]);
@@ -186,94 +148,6 @@ ambitv_video_fmt_detect_crop_for_frame_yuyv(int crop[4], int luminance_threshold
       for (i=0; i<w/8; i+=4) {
          for (j=0; j<32; j++) {
             unsigned char* pix = &(((unsigned char*)pixbuf)[i + ss[j]*bytesperline]);      
-            if (luminance_threshold < pix[0] && luminance_threshold < pix[2]) {
-               crop[3] = i>>1;
-               goto left_done;
-            }
-         }
-      }
-      
-   left_done:
-      
-      // right
-      for (i=w*2; i>2*w-w/8; i-=4) {
-         for (j=0; j<32; j++) {
-            unsigned char* pix = &(((unsigned char*)pixbuf)[i + ss[j]*bytesperline]);
-            if (luminance_threshold < pix[0] && luminance_threshold < pix[2]) {
-               crop[1] = (w*2-i)>>1;
-               goto right_done;
-            }
-         }
-      }
-      
-   right_done:
-      
-      for (i=0; i<32; i++)
-         ss[i] = (sx * ((i+16) % 32));
-      
-      // top
-     for (i=0; i<h/5; i++) {
-         for (j=0; j<32; j++) {
-            unsigned char* pix = &(((unsigned char*)pixbuf)[ss[j] + i*bytesperline]);
-            if (luminance_threshold < pix[0] && luminance_threshold < pix[2]) {
-               crop[0] = i;
-               goto top_done;
-            }
-         }
-      }
-      
-   top_done:
-      
-      // bottom
-      for (i=h; i>h-h/5; i--) {
-         for (j=0; j<32; j++) {
-            unsigned char* pix = &(((unsigned char*)pixbuf)[ss[j] + i*bytesperline]);
-            if (luminance_threshold < pix[0] && luminance_threshold < pix[2]) {
-               crop[2] = h-i;
-               goto bottom_done;
-            }
-         }
-      }
-      
-   bottom_done:
-      
-      ret = 0;
-   }
-   
-   return ret;
-}
-
-static int
-ambitv_video_fmt_detect_crop_for_frame_uyvy(int crop[4], int luminance_threshold, const void* pixbuf, int w, int h, int bytesperline)
-{
-   int ret = -1;
-   
-   if (NULL != pixbuf && NULL != crop) {
-      /*
-       * we take 32 samples along the axis each, scanning from the middle.
-       * this way, we should maximize the chance to crop correctly, unless
-       * the image is extremely dark, so that none of our samples would fall
-       * into a bright area.
-       *
-       * we limit the scanning depth to 1/5 of the height (should capture most
-       * sensible letterboxing) and 1/16 along the width, since this is usually
-       * not letterboxed, so the crop will only be necessary to get rid of the
-       * inset caused by crappy video capture devices.
-       */
-      
-      int i, j, sx = ((w >> 6) << 2), sy = (h >> 5);
-      int ss[32];
-      
-      luminance_threshold += 16;
-      bytesperline = bytesperline ? bytesperline : 2*w;
-      
-      for (i=0; i<32; i++)
-         ss[i] = (sy * ((i+16) % 32));
-            
-      // left
-      for (i=0; i<w/8; i+=4) {
-         for (j=0; j<32; j++) {
-            unsigned char* pix = &(((unsigned char*)pixbuf)[i + ss[j]*bytesperline]);      
             if (luminance_threshold < pix[1] && luminance_threshold < pix[3]) {
                crop[3] = i>>1;
                goto left_done;
@@ -330,7 +204,6 @@ ambitv_video_fmt_detect_crop_for_frame_uyvy(int crop[4], int luminance_threshold
    
    return ret;
 }
-
 
 int
 ambitv_video_fmt_avg_rgb_for_block(unsigned char* rgb, const void* pixbuf, int x, int y, int w, int h, int bytesperline,
@@ -341,10 +214,6 @@ ambitv_video_fmt_avg_rgb_for_block(unsigned char* rgb, const void* pixbuf, int x
    switch (fmt) {
       case ambitv_video_format_yuyv:
          ret = avg_rgb_for_block_yuyv(rgb, pixbuf, x, y, w, h, bytesperline, coarseness);
-         break;
-
-      case ambitv_video_format_uyvy:
-         ret = avg_rgb_for_block_uyvy(rgb, pixbuf, x, y, w, h, bytesperline, coarseness);
          break;
 
       default:
@@ -364,10 +233,6 @@ ambitv_video_fmt_detect_crop_for_frame(int crop[4], int luminance_threshold, con
    switch (fmt) {
       case ambitv_video_format_yuyv:
          ret = ambitv_video_fmt_detect_crop_for_frame_yuyv(crop, luminance_threshold, pixbuf, w, h, bytesperline);
-         break;
-
-      case ambitv_video_format_uyvy:
-         ret = ambitv_video_fmt_detect_crop_for_frame_uyvy(crop, luminance_threshold, pixbuf, w, h, bytesperline);
          break;
    
       default:
