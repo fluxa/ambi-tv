@@ -74,8 +74,9 @@ static void yuv_to_rgb(int y, int u, int v, unsigned char* r, unsigned char* g, 
       if (rgb[i] < 0) rgb[i] = 0; 
    }
 
-   *r = (unsigned char)rgb[0];
-   *g = (unsigned char)rgb[1];
+   // Fix swapped colors
+   *r = (unsigned char)rgb[1];
+   *g = (unsigned char)rgb[0];
    *b = (unsigned char)rgb[2];
 }
 
