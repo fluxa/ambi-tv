@@ -235,15 +235,15 @@ ambitv_v4l2_grab_init_device(struct v4l2_grab* grabber)
    }
 
    // Fix cropping STK1160 NTSC
-   vid_fmt.fmt.pix.width   = 720;
-   vid_fmt.fmt.pix.height   = 576;
+   // vid_fmt.fmt.pix.width   = 720;
+   // vid_fmt.fmt.pix.height   = 576;
    
-   ret = xioctl(grabber->fd, VIDIOC_S_FMT, &vid_fmt);
-   if (ret < 0) {
-      ambitv_log(ambitv_log_error, LOGNAME "failed to set video format of '%s'.\n",
-         grabber->device_name);
-      return -EINVAL;
-   }
+   // ret = xioctl(grabber->fd, VIDIOC_S_FMT, &vid_fmt);
+   // if (ret < 0) {
+   //    ambitv_log(ambitv_log_error, LOGNAME "failed to set video format of '%s'.\n",
+   //       grabber->device_name);
+   //    return -EINVAL;
+   // }
    // END Fix
    
    grabber->width          = vid_fmt.fmt.pix.width;
