@@ -363,12 +363,14 @@ main(int argc, char** argv)
    
    signal(SIGINT, ambitv_signal_handler);
    signal(SIGTERM, ambitv_signal_handler);
-   
+   setvbuf(stdout, NULL, _IONBF, 0);
+
    printf(
       "\n"
       "*********************************************************\n"
       "*  ambi-tv: diy ambient lighting for your screen or tv  *\n"
       "*                                         (c) @gkaindl  *\n"
+      "*  modified by @fluxa                                   *\n"
       "*********************************************************\n"
       "\n"
    );
