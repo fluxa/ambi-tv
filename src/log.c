@@ -49,5 +49,4 @@ ambitv_log(enum ambitv_log_priority priority, const char* fmt, ...)
    
    va_end(args);
 
-   fflush(stdout);
 }
